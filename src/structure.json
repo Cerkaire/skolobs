@@ -1,0 +1,51 @@
+{
+    "fiche": {
+      "date": "YYYY-MM-DD",
+      "coordonnee": [latitude, longitude],
+      "autres_champs_fiche": "valeur"
+    },
+    "especes": {
+      "cdnom_1": {
+        "nom": "Nom de l'espèce",
+        "nomvern": "Nom vernaculaire",
+        "autres_champs_espece": "valeur",
+        "stades": {
+          "stade_1": {
+            "parametre_1": "valeur",
+            "parametre_2": "valeur",
+            "parametre_3": "valeur",
+            ...
+          },
+          "stade_2": {
+            "parametre_1": "valeur",
+            "parametre_2": "valeur",
+            "parametre_3": "valeur",
+            ...
+          },
+          ...
+        }
+      },
+      "cdnom_2": {
+        "nom": "Nom de l'espèce",
+        "nomvern": "Nom vernaculaire",
+        "autres_champs_espece": "valeur",
+        "stades": {
+          "stade_1": {
+            "parametre_1": "valeur",
+            "parametre_2": "valeur",
+            "parametre_3": "valeur",
+            ...
+          },
+          "stade_2": {
+            "parametre_1": "valeur",
+            "parametre_2": "valeur",
+            "parametre_3": "valeur",
+            ...
+          },
+          ...
+        }
+      },
+      ...
+    }
+  }
+  

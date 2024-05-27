@@ -1,24 +1,28 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Parametre from './components/Parametre';
+import Saisi from './pages/Saisi';
+import Obs from './pages/Obs';
+import Synchro from './components/Synchro';
+import { MainProvider } from './context/MainContext'; // Corrigez le chemin d'importation
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <MainProvider>
+      <>
+        <Navbar />
+        <Routes>
+        <Route path="/lannobsgo" element={<Home />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/parametre" element={<Parametre />} />
+          <Route path="/saisi" element={<Saisi />} />
+          <Route path="/obs" element={<Obs />} />
+          <Route path="/synchro" element={<Synchro />} />
+        </Routes>
+      </>
+    </MainProvider>
   );
 }
 

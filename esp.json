@@ -1,0 +1,308 @@
+[
+  {
+    "cdnom": 189172,
+    "nom": "Anguis",
+    "nomvern": "Orvet",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 77619,
+    "nom": "Lacerta bilineata",
+    "nomvern": "Lézard à deux raies",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 191163,
+    "nom": "Coronella",
+    "nomvern": "Coronelle",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 189014,
+    "nom": "Alytes",
+    "nomvern": "Alyte",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 77600,
+    "nom": "Lacerta agilis",
+    "nomvern": "Lézard des souches",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 77955,
+    "nom": "Coronella austriaca",
+    "nomvern": "Coronelle lisse",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 193772,
+    "nom": "Lacerta",
+    "nomvern": "Lézard",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 197,
+    "nom": "Alytes obstetricans",
+    "nomvern": "Alyte accoucheur",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 196473,
+    "nom": "Podarcis",
+    "nomvern": "Podarcis",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 77490,
+    "nom": "Anguis fragilis",
+    "nomvern": "Orvet fragile",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 699157,
+    "nom": "Bufo",
+    "nomvern": "Crapaud",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 78048,
+    "nom": "Natrix maura",
+    "nomvern": "Couleuvre vipérine",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 199155,
+    "nom": "Zootoca",
+    "nomvern": "Zootoca",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 195079,
+    "nom": "Natrix",
+    "nomvern": "Natrix",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 459628,
+    "nom": "Epidalea calamita",
+    "nomvern": "Crapaud calamite",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 252,
+    "nom": "Pelodytes punctatus",
+    "nomvern": "Pélodyte ponctué",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 701821,
+    "nom": "Vipera",
+    "nomvern": "Vipère",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 774678,
+    "nom": "Bufo spinosus",
+    "nomvern": "Crapaud épineux",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 77756,
+    "nom": "Podarcis muralis",
+    "nomvern": "Lézard des murailles",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 78141,
+    "nom": "Vipera berus",
+    "nomvern": "Vipère péliade",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 819827,
+    "nom": "Epidalea",
+    "nomvern": "",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 193458,
+    "nom": "Hyla",
+    "nomvern": "Rainette",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 195918,
+    "nom": "Pelodytes",
+    "nomvern": "Pélodyte",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 79278,
+    "nom": "Zootoca vivipara",
+    "nomvern": "Lézard vivipare",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 851674,
+    "nom": "Natrix helvetica",
+    "nomvern": "Couleuvre helvétique",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 281,
+    "nom": "Hyla arborea",
+    "nomvern": "Rainette verte",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 198527,
+    "nom": "Trachemys",
+    "nomvern": "Trachémyde",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 198300,
+    "nom": "Testudo",
+    "nomvern": "Tortue",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 77433,
+    "nom": "Testudo hermanni",
+    "nomvern": "Tortue d'Hermann",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 444431,
+    "nom": "Lissotriton vulgaris",
+    "nomvern": "Triton ponctué",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 444441,
+    "nom": "Pelophylax lessonae",
+    "nomvern": "Grenouille de Lessona",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 77428,
+    "nom": "Testudo graeca",
+    "nomvern": "Tortue grecque",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 444436,
+    "nom": "Pelophylax",
+    "nomvern": "Pélophylax",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 197040,
+    "nom": "Rana",
+    "nomvern": "Grenouille",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 444429,
+    "nom": "Ichthyosaura",
+    "nomvern": "Ichthyosaure",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 444433,
+    "nom": "Lissotriton",
+    "nomvern": "Lissotriton",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 197327,
+    "nom": "Salamandra",
+    "nomvern": "",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 444440,
+    "nom": "Pelophylax kl. esculentus",
+    "nomvern": "Grenouille verte",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 351,
+    "nom": "Rana temporaria",
+    "nomvern": "Grenouille rousse",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 444443,
+    "nom": "Pelophylax ridibundus",
+    "nomvern": "Grenouille rieuse",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 310,
+    "nom": "Rana dalmatina",
+    "nomvern": "Grenouille agile",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 444432,
+    "nom": "Lissotriton helveticus",
+    "nomvern": "Triton palmé",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 92,
+    "nom": "Salamandra salamandra",
+    "nomvern": "Salamandre tachetée",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 444430,
+    "nom": "Ichthyosaura alpestris",
+    "nomvern": "Triton alpestre",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 77424,
+    "nom": "Trachemys scripta",
+    "nomvern": "Trachémyde écrite",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 150,
+    "nom": "Triturus cristatus x T. marmoratus",
+    "nomvern": "Triton de Blasius",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 198682,
+    "nom": "Triturus",
+    "nomvern": "Triton",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 163,
+    "nom": "Triturus marmoratus",
+    "nomvern": "Triton marbré",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 139,
+    "nom": "Triturus cristatus",
+    "nomvern": "Triton crêté",
+    "observatoire": "amp"
+  },
+  {
+    "cdnom": 699672,
+    "nom": "Lacerta bilineata bilineata",
+    "nomvern": "Lézard à deux raies",
+    "observatoire": "rep"
+  },
+  {
+    "cdnom": 436818,
+    "nom": "Lithobates",
+    "nomvern": "Lithobate",
+    "observatoire": "amp"
+  }
+]
