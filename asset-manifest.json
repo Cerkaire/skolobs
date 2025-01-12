@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/skolobs/static/css/main.2e662a65.css",
-    "main.js": "/skolobs/static/js/main.e4f642f4.js",
+    "main.js": "/skolobs/static/js/main.66e7f2a9.js",
     "service-worker.js": "/skolobs/service-worker.js",
     "index.html": "/skolobs/index.html",
     "main.2e662a65.css.map": "/skolobs/static/css/main.2e662a65.css.map",
-    "main.e4f642f4.js.map": "/skolobs/static/js/main.e4f642f4.js.map"
+    "main.66e7f2a9.js.map": "/skolobs/static/js/main.66e7f2a9.js.map"
   },
   "entrypoints": [
     "static/css/main.2e662a65.css",
-    "static/js/main.e4f642f4.js"
+    "static/js/main.66e7f2a9.js"
   ]
 }
