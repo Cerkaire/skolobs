@@ -6,6 +6,12 @@
 // will only see deployed updates on subsequent visits to a page, after all the
 // existing tabs open on the page have been closed, since previously cached
 // resources are updated in the background.
+/* eslint-disable no-restricted-globals */
+
+
+import { precacheAndRoute } from 'workbox-precaching';
+
+precacheAndRoute(self.__WB_MANIFEST || []);
 
 const isLocalhost = Boolean(
     window.location.hostname === 'localhost' ||
@@ -18,6 +24,7 @@ const isLocalhost = Boolean(
 );
 
 function register(config) {
+    
     if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
         // The URL constructor is available in all browsers that support SW.
         const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);

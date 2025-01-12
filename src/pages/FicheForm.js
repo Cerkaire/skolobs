@@ -1,37 +1,96 @@
-import React, { useContext } from 'react';
-import { Card, TextField, FormControl, InputLabel, Select, MenuItem, Button, Box, Typography, Switch, IconButton, Grid } from '@mui/material';
+import React, { useContext, useState } from 'react';
+import { Card, TextField, FormControl, InputLabel, Select, MenuItem, Button, Box, Typography, Switch, IconButton, Grid, Fab, DialogContent, Dialog, DialogTitle, DialogActions } from '@mui/material';
 import { MainContext } from '../context/MainContext';
+import InfoIcon from '@mui/icons-material/Info';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import Dexie from 'dexie';
+import { db } from '../db/db';
+
 
 const FicheForm = ({ organismes, etudes, onCancel }) => {
-    const { formData, setFormData, updatePhase, setPhase, updateFormData, clickedPosition } = useContext(MainContext);
+    const { formData, setFormData, updatePhase, setPhase, updateFormData, clickedPosition, selectedSite } = useContext(MainContext);
+    const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
+    const [userData, setUserData] = useState({});
 
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const user = await db.user.toCollection().first();
+                if (user) {
+                    setUserData(user);
+                }
+            } catch (error) {
+                console.error('Failed to fetch user data from Dexie', error);
+            }
+        };
+        fetchUserData();
+    }, []);
+
+    useEffect(() => {
+        console.log('userData', userData);
+    }, [userData]);
+
+    //Mise a jour a la validation
     const handleSubmit = (event) => {
         event.preventDefault();
         // Mettre à jour les données de la fiche dans le contexte
         const newFormData = {
+            ...formData,
             fiche: {
-                lat: clickedPosition.lat,
-                long: clickedPosition.lng,
-                date1: formData.fiche.date1,
-                date2: formData.fiche.date2,
-                organisme: formData.fiche.organisme,
-                etude: formData.fiche.etude,
-                typeDonnee: formData.fiche.typeDonnee,
-                diffusion: formData.fiche.diffusion,
+                ...formData.fiche,
+                date1: formData.fiche.date || null,
+                date2: formData.fiche.date2 || null,
+                organisme: 2,
+                typeDonnee: 'Pu',
+                diffusion: 0,
+                site: userData.site || null,
+                idsite: userData.idsite || null,
+                newsite: false,
+                idcoord: userData.idcoord || null,
+                etude: userData.etude || null,
+                idm: userData.idm || null,
+                idobser: userData.idobser || null
             }
         };
         updateFormData(newFormData);
-        console.log('newFormData', newFormData);
+        console.log('newFormData', newFormData)
         setPhase('observation');
+    };
+
+    // Fonction pour ouvrir le dialogue
+    const handleOpenDialog = () => {
+        console.log('selectedsite', selectedSite)
+        setOpen(true);
+    };
+
+    // Fonction pour fermer le dialogue
+    const handleCloseDialog = () => {
+        setOpen(false);
     };
 
     return (
         <Card sx={{ padding: 2 }}>
-            <Typography variant="h5">Fiche d'observation</Typography>
-            {clickedPosition && (
-                <Typography>{clickedPosition.lat.toFixed(5)}, {clickedPosition.lng.toFixed(5)}</Typography>
-            )}
-
+            {/* Bouton pour ouvrir le dialogue */}
+            <Fab color="primary" aria-label="help" onClick={handleOpenDialog} style={{ position: 'fixed', bottom: 16, left: 16 }}>
+                <HelpOutlineIcon />
+            </Fab>
+            {/* Dialogue pour afficher les conseils */}
+            <Dialog open={open} onClose={handleCloseDialog}>
+                <DialogTitle>Conseils d'utilisation</DialogTitle>
+                <DialogContent>
+                    <p>Vous n'etes pas obligé de mettre un date de fin. Privilégier toujours une seule date précise</p>
+                    <p>Ne sélectionnez une étude que si vous réalisez des relevés protocolés en lien avec une étude</p>
+                    <p>Privées : ne contriburons pas à alimenter les bases autres que Langazel</p>
+                    <p>Diffusion : permet de flouter la réstitution des données</p>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Fermer</Button>
+                </DialogActions>
+            </Dialog>
+            <Typography variant="h5">Dates d'observation</Typography>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2} direction="row" justifyContent="center" alignItems="center">
                     <Grid item xs={6}>
@@ -63,83 +122,67 @@ const FicheForm = ({ organismes, etudes, onCancel }) => {
                         />
                     </Grid>
                 </Grid>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Organisme</InputLabel>
-                    <Select
-                        value={formData.fiche.organisme}
-                        onChange={(e) => setFormData({
-                            ...formData,
-                            fiche: { ...formData.fiche, organisme: e.target.value }
-                        })}
-                    >
-                        {organismes.map((org) => (
-                            <MenuItem key={org.idorg} value={org.idorg}>{org.organisme}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Etude</InputLabel>
-                    <Select
-                        value={formData.fiche.etude}
-                        onChange={(e) => setFormData({
-                            ...formData,
-                            fiche: { ...formData.fiche, etude: e.target.value }
-                        })}
-                    >
-                        {etudes.map((et) => (
-                            <MenuItem key={et.idetude} value={et.idetude}>{et.etude}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <Grid container spacing={2} direction="row" justifyContent="center" alignItems="center">
-                    <Grid item xs={6}>
-                        <FormControl margin="normal">
-                            <Typography>Type de donnée</Typography>
-                            <Switch
-                                checked={formData.fiche.typeDonnee === 'Pr'}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    fiche: { ...formData.fiche, typeDonnee: e.target.checked ? 'Pr' : 'Pu' }
-                                })}
-                            />
-                            <Typography>{formData.fiche.typeDonnee === 'Pr' ? 'Privé' : 'Public'}</Typography>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Diffusion</InputLabel>
-                            <Select
-                                value={formData.fiche.diffusion}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    fiche: { ...formData.fiche, diffusion: e.target.value }
-                                })}
-                            >
-                                <MenuItem value="Point">Point</MenuItem>
-                                <MenuItem value="Maille">Maille</MenuItem>
-                                <MenuItem value="Commune">Commune</MenuItem>
-                                <MenuItem value="Département">Département</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                </Grid>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', margin: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                            <Button variant="outlined" color="secondary" onClick={onCancel}>
-                                Retour carte
-                            </Button>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Button variant="contained" color="success" type="submit">
-                                Saisir des Obs
-                            </Button>
-                        </Grid>
-
-                    </Grid>
-                </Box>
             </form>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', margin: 2 }}>
+                <Grid container spacing={2} sx={{ padding: 2 }}>
+                    <Grid item xs={12}>
+                        <Typography variant="h5">Comment avez-vous réaliser ces observations</Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Card elevation={3} sx={{ height: 200, cursor: 'pointer' }} onClick={() => console.log('Card 1 clicked')}>
+                            <Box
+                                sx={{
+                                    width: 200,
+                                    height: 200,
+                                    backgroundImage: `url(${process.env.PUBLIC_URL + '/icones/oiso.png'})`,
+                                    backgroundSize: 'contain',
+                                    backgroundPosition: 'center',
+                                }}
+                            />
+                        </Card>
+                    </Grid>
+                    <Grid item xs={4} >
+                        <Card elevation={3} sx={{ height: 200, cursor: 'pointer' }} onClick={() => console.log('Card 2 clicked')}>
+                            <Box
+                                sx={{
+                                    width: 200,
+                                    height: 200,
+                                    height: '100%',
+                                    backgroundImage: `url(${process.env.PUBLIC_URL + '/icones/nid.png'})`,
+                                    backgroundSize: 'contain',
+                                    backgroundPosition: 'center',
+                                }}
+                            />
+                        </Card>
+                    </Grid>
+                    <Grid item xs={4} >
+                        <Card elevation={3} sx={{ height: 200, cursor: 'pointer' }} onClick={() => console.log('Card 3 clicked')}>
+                            <Box
+                                sx={{
+                                    width: 200,
+                                    height: 200,
+                                    height: '100%',
+                                    backgroundImage: `url(${process.env.PUBLIC_URL + '/icones/mangeoire.png'})`,
+                                    backgroundSize: 'contain',
+                                    backgroundPosition: 'center',
+                                }}
+                            />
+                        </Card>
+                    </Grid>
 
+                    <Grid item xs={6} md={6}>
+                        <Button variant="outlined" color="secondary" onClick={() => navigate('/')}>
+                            Annuler
+                        </Button>
+                    </Grid>
+                    <Grid item xs={6} md={6}>
+                        <Button variant="contained" color="success" onClick={handleSubmit}>
+                            Saisir des Obs
+                        </Button>
+                    </Grid>
+
+                </Grid>
+            </Box>
         </Card>
     );
 };

@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, CardContent, Button, Typography, CircularProgress, Box, CardHeader } from '@mui/material';
 import { db } from '../db/db';
+import { useNavigate } from 'react-router-dom';
+import proj4 from 'proj4';
 
 export default function Parametre() {
     const [status, setStatus] = useState('');
     const [observatoireCount, setObservatoireCount] = useState(0);
+    const [observateursCount, setObservateursCount] = useState(0);
     const [speciesCount, setSpeciesCount] = useState(0);
+    const [siteCount, setSiteCount] = useState(0);
+    const [communeCount, setCommuneCount] = useState(0);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    // Définir les systèmes de projection
+    const lambert93 = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
+    const wgs84 = 'EPSG:4326';
 
     useEffect(() => {
         fetchCounts();
@@ -17,6 +26,12 @@ export default function Parametre() {
         setObservatoireCount(observatoireArray.length);
         const speciesArray = await db.species.toArray();
         setSpeciesCount(speciesArray.length);
+        const communeArray = await db.commune.toArray();
+        setCommuneCount(communeArray.length);
+        const siteArray = await db.site.toArray();
+        setSiteCount(siteArray.length);
+        const observateursArray = await db.observateurs.toArray();
+        setObservateursCount(observateursArray.length);
 
     }
 
@@ -25,6 +40,8 @@ export default function Parametre() {
         await handleUpdateObservatoireApiData();
         await handleUpdateSpeciesData();
         await handleUpdateParamData();
+        await handleUpdateSiteData();
+        await handleUpdateCommuneData();
         setLoading(false);
     };
 
@@ -71,7 +88,7 @@ export default function Parametre() {
                 cdnom: item.cdnom,
                 nom: item.nom,
                 nomvern: item.nomvern,
-                observatoire: item.observatoire, // Corrected typo here
+                observatoire: item.observatoire,
                 rang: item.rang
             }));
 
@@ -156,10 +173,107 @@ export default function Parametre() {
 
             setStatus('Données des paramètres API chargées avec succès');
             fetchCounts();
+            navigate("/lannobsgo");
         } catch (error) {
             setStatus(`Erreur lors de la mise à jour des données de l'API : ${error}`);
         }
     }
+
+    async function handleUpdateSiteData() {
+        try {
+            await db.site.clear();
+            await db.observateurs.clear();
+            setStatus('Bases de données vidées');
+
+            const response = await fetch('https://www.langazobs.langazel.asso.fr/api/v1/site');
+            const data = await response.json();
+
+            const observateursData = data.observateurs.map((item) => ({
+                idobser: item.idobser,
+                observateur: item.observateur,
+                nom: item.nom,
+                prenom: item.prenom
+            }));
+
+            const siteData = data.site.map((item) => ({
+                idsite: item.idsite,
+                idcoord: item.idcoord,
+                codecom: item.codecom,
+                site: item.site,
+                idparent: item.idparent,
+                wsite: item.wsite,
+                typestation: item.typestation,
+                idstatus: item.idstatus,
+                x: item.x,
+                y: item.y,
+                altitude: item.altitude,
+                lat: item.lat,
+                lng: item.lng,
+                codel93: item.codel93,
+                utm: item.utm,
+                utm1: item.utm1,
+                codel935: item.codel935,
+                codel931: item.codel931
+            }));
+
+            await db.site.bulkAdd(siteData);
+            await db.observateurs.bulkAdd(observateursData);
+
+            setStatus('Données des sites chargées avec succès');
+            fetchCounts();
+            navigate("/lannobsgo");
+        } catch (error) {
+            setStatus(`Erreur lors de la mise à jour des données de l'API : ${error}`);
+        }
+    }
+
+    async function handleUpdateCommuneData() {
+        try {
+            // Nettoyez les bases de données existantes
+            await db.commune.clear();
+            await db.geojson.clear(); // Vider la table 'geojson' si elle existe
+            setStatus('Bases de données vidées');
+
+            // Récupérez les données depuis l'API
+            const response = await fetch('https://www.langazobs.langazel.asso.fr/api/v1/commune');
+            const data = await response.json();
+
+            // Préparer les projections
+            const lambert93 = "+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
+            const wgs84 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+
+            // Préparez les données pour la table 'commune'
+            const communeData = Object.values(data).map((item) => ({
+                codecom: item.codecom,
+                commune: item.commune,
+                poly: item.poly,
+                geojson: item.geojson, // Coordonnées brutes
+            }));
+            // Transformez les coordonnées en WGS84
+            const multiPolygon = Object.values(data).map((item) => {
+                const rawCoordinates = JSON.parse(item.geojson); // Coordonnées brutes
+                return rawCoordinates.map((polygon) =>
+                    polygon.map((coord) => {
+                        const [lng, lat] = proj4(lambert93, wgs84, coord); // Conversion Lambert93 → WGS84
+                        return [lat, lng]; // Inverser lng/lat pour obtenir [lat, lng]
+                    })
+                );
+            });
+
+            // Stockez les données dans les tables Dexie
+            await db.commune.bulkAdd(communeData); // Ajouter les données des communes
+            await db.geojson.add(multiPolygon); // Ajouter le MultiPolygon dans la table 'geojson'
+
+            // Mettez à jour l'état
+            setStatus('Données des communes chargées avec succès');
+            fetchCounts(); // Mettez à jour les compteurs
+            navigate("/lannobsgo"); // Redirection après succès
+        } catch (error) {
+            // Gestion des erreurs
+            setStatus(`Erreur lors de la mise à jour des données de l'API : ${error}`);
+        }
+    }
+
 
     return (
         <Container>
@@ -199,7 +313,23 @@ export default function Parametre() {
                     <Card>
                         <CardContent>
                             <Typography variant="h5">Paramètres</Typography>
+                            <Typography variant="caption">(Etudes, protocoles, stades, etc)</Typography>
                             <Button onClick={handleUpdateParamData} size="small">Mettre à jour les paramètres</Button>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h5">Communes</Typography>
+                            <Button onClick={handleUpdateCommuneData} size="small">Mettre à jour les communes</Button>
+                            <Typography variant="body1">Nombre de commune : {communeCount}</Typography>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h5">Sites et observateurs</Typography>
+                            <Button onClick={handleUpdateSiteData} size="small">Mettre à jour les sites</Button>
+                            <Typography variant="body1">Nombre de sites : {siteCount}</Typography>
+                            <Typography variant="body1">Nombre d'observateurs : {observateursCount}</Typography>
                         </CardContent>
                     </Card>
                     <Typography variant="body1">{status}</Typography>

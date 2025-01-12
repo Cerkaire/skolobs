@@ -1,28 +1,39 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { db } from '../db/db';
+import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
 
 export const MainContext = createContext();
 
 export const MainProvider = ({ children }) => {
+
+    const [selectedSite, setSelectedSite] = useState(null);
+    const [newSite, setNewsite] = useState(null);
     const [selectedSpecies, setSelectedSpecies] = useState(null);
+    const [selectedStade, setSelectedStade] = useState(null);
+    const [stadeEdit, setStadeEdit] = useState(null);
     const [clickedPosition, setClickedPosition] = useState(null);
     const [formData, setFormData] = useState({
         fiche: {
             lat: "",
             long: "",
+            site: "",
+            idsite: "",
+            idcoord: "",
+            newsite: "",
             date: "",
             date2: "",
-            organisme: 1,
+            organisme: 2,
             etude: 0,
             typeDonnee: 'Pu',
             diffusion: 'Point'
         },
         especes: {}
     });
-    const [phase, setPhase] = useState('map');
+    const [phase, setPhase] = useState('fiche');
     const [user, setUser] = useState(null);
     const [obsCount, setObsCount] = useState(0);
-
+    const navigate = useNavigate();
     // Fonction pour obtenir la date du jour au format 'YYYY-MM-DD'
     const getTodayDate = () => {
         return new Date().toISOString().split('T')[0];
@@ -36,7 +47,7 @@ export const MainProvider = ({ children }) => {
             fiche: {
                 ...prevData.fiche,
                 date: getTodayDate(),
-                date2: getTodayDate()
+                date2: ''
             }
         }));
     }, []);
@@ -46,9 +57,13 @@ export const MainProvider = ({ children }) => {
         fiche: {
             lat: "",
             long: "",
+            site: "",
+            idsite: "",
+            idcoord: "",
+            newsite: "",
             date: getTodayDate(),
-            date2: getTodayDate(),
-            organisme: '',
+            date2: '',
+            organisme: '2',
             etude: 0,
             typeDonnee: 'Pu',
             diffusion: 'Point'
@@ -63,14 +78,14 @@ export const MainProvider = ({ children }) => {
             fiche: {
                 ...initialFormData.fiche,
                 date: getTodayDate(),
-                date2: getTodayDate()
+                date2: '',
+                organisme: '2',
             }
         });
     };
 
     //Mettre à jour le user
     useEffect(() => {
-        console.log('date', formData)
         fetchUser();
     }, []);
 
@@ -91,12 +106,22 @@ export const MainProvider = ({ children }) => {
     // Fonction pour mettre à jour la phase
     const updatePhase = (newPhase) => {
         setPhase(newPhase);
+        // On recompte le nombre d'obs dans la base
+        const fetchObsCount = async () => {
+            try {
+                const count = await db.obs.count();
+                setObsCount(count);
+            } catch (error) {
+                console.error('Erreur lors de la récupération du nombre de lignes dans obs:', error);
+            }
+        };
+
+        fetchObsCount();
     };
 
     // Fonction pour mettre à jour `selectedSpecies`
     const updateSelectedSpecies = (species) => {
         setSelectedSpecies(species);
-        console.log('selectedSpecies', selectedSpecies)
     };
 
     // Fonction pour mettre à jour `formData`
@@ -132,6 +157,7 @@ export const MainProvider = ({ children }) => {
                     observatoire: observationData.observatoire,
                     etude: parseInt(observationData.etude),
                     protocole: parseInt(observationData.protocole),
+                    rqobs: observationData.rqobs,
                     nb: parseInt(observationData.maleCount + observationData.femaleCount + observationData.undeterminedCount),
                     stades: {}
                 };
@@ -143,6 +169,7 @@ export const MainProvider = ({ children }) => {
                 maleCount: observationData.maleCount,
                 femaleCount: observationData.femaleCount,
                 undeterminedCount: observationData.undeterminedCount,
+                tdenom: observationData.tdenom,
                 denom: observationData.denom,
                 methode: parseInt(observationData.methode),
                 protocole: parseInt(observationData.protocole),
@@ -159,8 +186,8 @@ export const MainProvider = ({ children }) => {
     };
 
     // Fonction pour ajouter ou mettre à jour un stade pour une espèce
-    const addOrUpdateStade = async (cdnom, stade, stadeData) => {
-        const libstade = await fetchLibelleStade(stade);
+    const addOrUpdateStade = async (cdnom, currentStade, stadeData) => {
+        const libstade = await fetchLibelleStade(stadeData.stade);
         setFormData((prevFormData) => {
             const updatedFormData = { ...prevFormData };
 
@@ -171,16 +198,27 @@ export const MainProvider = ({ children }) => {
                     nomvern: stadeData.nomvern,
                     observatoire: stadeData.observatoire,
                     protocole: stadeData.protocole,
+                    etude: stadeData.etude,
+                    rqobs: stadeData.rqobs,
+                    nb: parseInt(stadeData.maleCount + stadeData.femaleCount + stadeData.undeterminedCount),
                     stades: {}
                 };
             }
-
-            updatedFormData.especes[cdnom].stades[stade] = {
+            // Mettre à jour rqobs au niveau de l'espèce
+            updatedFormData.especes[cdnom].rqobs = stadeData.rqobs;
+            // Mettre à jour ou ajouter le nouveau stade
+            updatedFormData.especes[cdnom].stades[stadeData.stade] = {
                 ...stadeData,
                 libstade: libstade || ''
             };
 
-            console.log('formData', formData);
+
+            // Supprimer l'ancien stade si la valeur du stade a changé
+            if (currentStade !== stadeData.stade) {
+                delete updatedFormData.especes[cdnom].stades[currentStade];
+            }
+
+            console.log('formData', updatedFormData);
             return updatedFormData;
         });
     };
@@ -216,17 +254,27 @@ export const MainProvider = ({ children }) => {
         });
     };
 
+    // Fonction pour éditer un stade pour une espèce
+    const updateSelectedStade = (stadeData) => {
+        setSelectedStade(stadeData);
+        console.log('setSelectedStade-MainContext', selectedStade)
+    };
+
     //Enregistrement des données
     const saveFormData = async (formData) => {
         try {
             if (!formData || !formData.fiche) {
                 throw new Error("formData ou formData.fiche est indéfini");
             }
+            if (formData.fiche.date2 == "") {
+                formData.fiche.date2 = formData.fiche.date;
+            }
 
             const ficheId = await db.fiche.add({
                 codecom: formData.fiche.codecom || '',
                 date: formData.fiche.date,
                 datef: formData.fiche.date2,
+                newsite: formData.fiche.newsite || false,
                 flou: formData.fiche.flou || 0,
                 hdeb: formData.fiche.hdeb || '',
                 hfin: formData.fiche.hfin || '',
@@ -235,12 +283,14 @@ export const MainProvider = ({ children }) => {
                 idetude: formData.fiche.etude || 0,
                 idfiche: formData.fiche.idfiche || 0,
                 idorg: formData.fiche.organisme || 0,
-                idsite: formData.fiche.idsite || 0,
+                idsite: formData.fiche.idsite || null,
+                idcoord: formData.fiche.idcoord || null,
                 lat: formData.fiche.lat,
                 lng: formData.fiche.long,
                 site: formData.fiche.site || '',
                 syn: formData.fiche.syn || 0,
-                typedon: formData.fiche.typeDonnee
+                typedon: formData.fiche.typeDonnee,
+                datesaisie: getTodayDate(),
             });
 
             if (!formData.especes) {
@@ -259,6 +309,7 @@ export const MainProvider = ({ children }) => {
                     observa: espece.observatoire,
                     syn: espece.syn || 0,
                     idprotocole: espece.protocole,
+                    rqobs: espece.rqobs,
                     nb: espece.nb,
                 });
 
@@ -266,7 +317,7 @@ export const MainProvider = ({ children }) => {
                     const stade = espece.stades[stadeId];
 
                     await db.ligne.add({
-                        idetatbio: stade.trouveMort || 0,
+                        idetatbio: stade.trouveMort === 1 ? 3 : 2,
                         idligne: stade.idligne || 0,
                         idobs: obsId,
                         idstade: stade.stade || 0,
@@ -277,9 +328,13 @@ export const MainProvider = ({ children }) => {
                         idpros: stade.collecte || 0,
                         stade: stade.stade || 0,
                         syn: stade.syn || 0,
-                        tdenom: stade.denom || 'Co',
+                        tdenom: stade.tdenom || 'IND',
+                        denom: stade.denom || 'Co',
                         idstbio: stade.statutbio || 0,
-                        idcomp: stade.comportement || 0
+                        idcomp: stade.comportement || 0,
+                        uuid: uuidv4(),
+                        libstade: stade.libstade,
+                        mort: stade.mort,
                     });
                 }
             }
@@ -302,10 +357,13 @@ export const MainProvider = ({ children }) => {
         }
     };
 
+    //Vérifie que les table dexie sont bien remplies
     const checkDbData = async () => {
         try {
             const tables = [
                 'protocole',
+                'site',
+                'commune',
                 'orga',
                 'etude',
                 'comportement',
@@ -330,13 +388,111 @@ export const MainProvider = ({ children }) => {
         }
     };
 
+    //formatage de formdata avc les données en base pour editer la fiche
+    const fetchFicheDataById = async (idfiche) => {
+        try {
+            // Récupérer la fiche spécifique depuis Dexie
+            const fiche = await db.fiche.get(idfiche);
+
+            if (!fiche) {
+                throw new Error(`Fiche with idfiche ${idfiche} not found.`);
+            }
+            console.log('fiche', fiche)
+            // Récupérer les observations liées à cette fiche
+            const obs = await db.obs.where('idfiche').equals(fiche.id).toArray();
+            console.log('Observations:', obs);
+
+            // Préparer un objet pour les espèces dans formData
+            const especes = {};
+
+            // Récupérer les lignes liées à chaque observation
+            const lignesPromises = obs.map(async (observation) => {
+                const lignes = await db.ligne.where('idobs').equals(observation.id).toArray();
+
+                console.log('lignes', lignes)
+                // Préparer un objet pour les stades dans chaque espèce
+                const stades = {};
+
+                lignes.forEach((ligne) => {
+                    stades[ligne.stade] = {
+                        trouveMort: ligne.idetatbio,
+                        mort: ligne.mort,
+                        maleCount: ligne.male || 0,
+                        femaleCount: ligne.femelle || 0,
+                        undeterminedCount: ligne.ndiff || 0,
+                        tdenom: ligne.tdenom,
+                        denom: ligne.denom,
+                        methode: ligne.idmethode,
+                        protocole: ligne.idpros,
+                        statutbio: ligne.idstbio,
+                        comportement: ligne.idcomp,
+                        collecte: ligne.idpros,
+                        stade: ligne.stade,
+                        libstade: ligne.libstade
+                    };
+                });
+                console.log('Stades for observation:', observation.cdnom, stades);
+                // Ajouter l'espèce à l'objet especes
+                especes[observation.cdnom] = {
+                    nom: observation.nom,
+                    cdnom: observation.cdnom,
+                    nomvern: observation.nomvern,
+                    observatoire: observation.observa,
+                    etude: observation.idetude,
+                    protocole: observation.idprotocole,
+                    rqobs: observation.rqobs,
+                    nb: observation.nb,
+                    stades: stades
+                };
+            });
+
+            // Attendre la résolution de toutes les promesses dans lignesPromises
+            await Promise.all(lignesPromises);
+            console.log('especes', especes)
+            // Construire l'objet formData avec les données récupérées
+            const newFormData = {
+                fiche: {
+                    lat: fiche.lat,
+                    long: fiche.lng,
+                    date: fiche.date,
+                    date2: fiche.datef,
+                    organisme: fiche.idorg,
+                    etude: fiche.idetude,
+                    typeDonnee: fiche.typedon,
+                    diffusion: fiche.syn,
+                },
+                especes: especes
+            };
+
+
+            setFormData(newFormData);
+            console.log('New FormData:', newFormData);
+
+            // Supprimer les lignes, les observations et la fiche pour éviter les doublons
+            const deletePromises = obs.map(async (observation) => {
+                await db.ligne.where('idobs').equals(observation.id).delete();
+                await db.obs.delete(observation.id);
+            });
+
+            await Promise.all(deletePromises);
+            await db.fiche.delete(idfiche);
+
+            setPhase('synthese');
+            navigate('/saisi');
+        } catch (error) {
+            console.error('Error fetching fiche data:', error);
+        }
+    };
+
 
     return (
         <MainContext.Provider value={{
             checkDbData,
             selectedSpecies,
+            selectedStade,
             formData,
             setSelectedSpecies: updateSelectedSpecies,
+            setSelectedStade: updateSelectedStade,
             setFormData: updateFormData,
             addOrUpdateSpecies,
             phase,
@@ -351,7 +507,12 @@ export const MainProvider = ({ children }) => {
             user,
             fetchUser,
             obsCount,
-            setObsCount
+            setObsCount,
+            fetchFicheDataById,
+            setSelectedSite,
+            selectedSite,
+            newSite,
+            setNewsite
 
         }}>
             {children}

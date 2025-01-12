@@ -7,8 +7,8 @@ import {
 import { db } from '../db/db';
 import { MainContext } from '../context/MainContext';
 
-const AddStadeForm = ({ onCancel }) => {
-    const { formData, addOrUpdateStade, setPhase, selectedSpecies } = useContext(MainContext);
+const EditStadeForm = ({ onCancel, selectedSpecies, selectedStade }) => {
+    const { formData, addOrUpdateStade, setPhase } = useContext(MainContext);
     const [observationData, setObservationData] = useState({
         collecte: '',
         comportement: '',
@@ -19,21 +19,21 @@ const AddStadeForm = ({ onCancel }) => {
         protocole: '',
         stade: '',
         statutbio: '',
-        rqobs: ''
+        rqobs: '',
+        maleCount: 0,
+        femaleCount: 0,
+        undeterminedCount: 0,
+        trouveMort: false
     });
+
     const [stadeOptions, setStadeOptions] = useState([]);
     const [collecteOptions, setCollecteOptions] = useState([]);
     const [comportementOptions, setComportementOptions] = useState([]);
     const [denomOptions, setDenomOptions] = useState([]);
-    const [tdenomOptions, setTdenomOptions] = useState([]);
     const [methodeOptions, setMethodeOptions] = useState([]);
     const [mortOptions, setMortOptions] = useState([]);
     const [protocoleOptions, setProtocoleOptions] = useState([]);
     const [statutbioOptions, setStatutbioOptions] = useState([]);
-    const [trouveMort, setTrouveMort] = useState(false);
-    const [maleCount, setMaleCount] = useState(0);
-    const [femaleCount, setFemaleCount] = useState(0);
-    const [undeterminedCount, setUndeterminedCount] = useState(0);
 
     useEffect(() => {
         const initializeOptions = async (observatoire) => {
@@ -54,12 +54,6 @@ const AddStadeForm = ({ onCancel }) => {
         }
     }, [selectedSpecies]);
 
-    // Définir les options de dénombrement
-    const denomOpt = [
-        { value: 'Co', label: 'Compté' },
-        { value: 'Es', label: 'Estimé' },
-    ];
-
     useEffect(() => {
         if (stadeOptions.length > 0 &&
             collecteOptions.length > 0 &&
@@ -70,49 +64,39 @@ const AddStadeForm = ({ onCancel }) => {
             protocoleOptions.length > 0 &&
             statutbioOptions.length > 0) {
             const defaultObservationData = {
-                collecte: collecteOptions[0].value,
-                comportement: comportementOptions[0].value,
-                denom: 'Co',
-                tdenom: 'IND',
-                methode: methodeOptions[0].value,
-                mort: mortOptions[0].value,
-                protocole: protocoleOptions[0].value,
-                stade: stadeOptions[0].value,
-                statutbio: statutbioOptions[0].value
+                collecte: selectedStade.collecte,
+                comportement: selectedStade.comportement,
+                denom: selectedStade.denom,
+                tdenom: selectedStade.tdenom,
+                methode: selectedStade.methode,
+                mort: selectedStade.mort,
+                protocole: selectedStade.protocole,
+                stade: selectedStade.stade,
+                statutbio: selectedStade.statutbio,
+                rqobs: selectedSpecies.rqobs,
+                maleCount: selectedStade.maleCount,
+                femaleCount: selectedStade.femaleCount,
+                undeterminedCount: selectedStade.undeterminedCount,
+                trouveMort: selectedStade.trouveMort
             };
             setObservationData(defaultObservationData);
-            console.log("Initial observation data:", observationData);
+            console.log("Initial Observation Data:", defaultObservationData);
         }
-    }, [stadeOptions, collecteOptions, comportementOptions, denomOptions, methodeOptions, mortOptions, protocoleOptions, statutbioOptions]);
+    }, [selectedStade, stadeOptions, collecteOptions, comportementOptions, denomOptions, methodeOptions, mortOptions, protocoleOptions, statutbioOptions]);
 
     const handleSubmit = () => {
-        // Construction des données d'observation pour un stade spécifique
-        const formattedObservationData = {
-            nom: selectedSpecies.nom,
-            nomvern: selectedSpecies.nomvern,
-            cdnom: selectedSpecies.cdnom,
-            observatoire: selectedSpecies.observatoire,
-            stade: observationData.stade,
-            trouveMort,
-            mort: trouveMort ? observationData.mort : null,
-            maleCount,
-            femaleCount,
-            undeterminedCount,
-            denom: observationData.denom,
-            tdenom: observationData.tdenom,
-            methode: observationData.methode,
-            protocole: observationData.protocole,
-            statutbio: observationData.statutbio,
-            comportement: observationData.comportement,
-            collecte: observationData.collecte,
-            rqobs: observationData.rqobs
-        };
-
-        // Utilisation de `addOrUpdateStade` pour ajouter ou mettre à jour l'espèce dans `formData`
-        addOrUpdateStade(selectedSpecies.cdnom, formattedObservationData.stade, formattedObservationData);
+        addOrUpdateStade(selectedSpecies.cdnom, selectedStade.stade, {
+            ...observationData
+        });
 
         setPhase('synthese');
     };
+
+    // Définir les options de dénombrement
+    const denomOpt = [
+        { value: 'Co', label: 'Compté' },
+        { value: 'Es', label: 'Estimé' },
+    ];
 
     const handleOptionChange = (field, value) => {
         setObservationData((prevData) => ({
@@ -121,16 +105,9 @@ const AddStadeForm = ({ onCancel }) => {
         }));
     };
 
-    useEffect(() => {
-        console.log(observationData.tdenom);
-    }, [observationData.tdenom]);
-
-    const isDenomIndOrNsp = observationData.tdenom === 'IND' || observationData.tdenom === 'NSP';
-
-
     return (
         <Card sx={{ padding: 2 }}>
-            <Typography variant="h5">Saisie des observations</Typography>
+            <Typography variant="h5">Modification du stade</Typography>
             <Typography>{formData.coordonnee}</Typography>
             <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -210,36 +187,40 @@ const AddStadeForm = ({ onCancel }) => {
                             <TextField
                                 type="number"
                                 label="Mâle"
-                                value={maleCount}
+                                value={observationData.maleCount}
                                 inputProps={{ min: 0 }}
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
-                                onChange={(e) => setMaleCount(parseInt(e.target.value))}
+                                onChange={(e) => handleOptionChange('maleCount', parseInt(e.target.value))}
                                 fullWidth
                                 sx={{ marginTop: 2 }}
-                                disabled={!isDenomIndOrNsp}
                             />
                         </Grid>
                         <Grid item xs={4}>
                             <TextField
                                 type="number"
                                 label="Femelle"
-                                value={femaleCount}
+                                value={observationData.femaleCount}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                                 inputProps={{ min: 0 }}
-                                onChange={(e) => setFemaleCount(parseInt(e.target.value))}
+                                onChange={(e) => handleOptionChange('femaleCount', parseInt(e.target.value))}
                                 fullWidth
                                 sx={{ marginTop: 2 }}
-                                disabled={!isDenomIndOrNsp}
                             />
                         </Grid>
                         <Grid item xs={4}>
                             <TextField
                                 type="number"
                                 label="Indéterminé"
-                                value={undeterminedCount}
+                                value={observationData.undeterminedCount}
                                 inputProps={{ min: 0 }}
-                                onChange={(e) => setUndeterminedCount(parseInt(e.target.value))}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                onChange={(e) => handleOptionChange('undeterminedCount', parseInt(e.target.value))}
                                 fullWidth
                                 sx={{ marginTop: 2 }}
                             />
@@ -309,14 +290,14 @@ const AddStadeForm = ({ onCancel }) => {
                                 <FormControlLabel
                                     control={
                                         <Switch
-                                            checked={trouveMort}
-                                            onChange={(e) => setTrouveMort(e.target.checked)}
+                                            checked={observationData.trouveMort}
+                                            onChange={(e) => handleOptionChange('trouveMort', e.target.checked)}
                                             color="primary"
                                         />
                                     }
                                     label="Trouvé mort"
                                 />
-                                {trouveMort && (
+                                {observationData.trouveMort && (
                                     <Select
                                         value={observationData.mort}
                                         onChange={(e) => handleOptionChange('mort', e.target.value)}
@@ -359,7 +340,7 @@ const AddStadeForm = ({ onCancel }) => {
                     <Grid item xs={12}>
                         <Box display="flex" justifyContent="space-between">
                             <Button variant="contained" color="secondary" onClick={onCancel}>Annuler</Button>
-                            <Button variant="contained" color="primary" onClick={handleSubmit}>Ajouter le stade</Button>
+                            <Button variant="contained" color="primary" onClick={handleSubmit}>Mettre à jour le stade</Button>
                         </Box>
                     </Grid>
                 </Box>
@@ -368,4 +349,4 @@ const AddStadeForm = ({ onCancel }) => {
     );
 };
 
-export default AddStadeForm;
+export default EditStadeForm;

@@ -12,20 +12,27 @@ export default function Navbar() {
 
   useEffect(() => {
     fetchUser();
-  }, [fetchUser]);
+  }, []);
 
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+      <AppBar position="static"
+        sx={{
+          borderRadius: 2,
+          background: 'linear-gradient(120deg, rgba(255, 255, 255, 1) 0%, rgba(233, 239, 237, 1) 40%, rgba(164, 199, 191, 1) 100%)',
+        }}
+
+      >
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={() => navigate('/')}>
-            Lann'Obs Go
+          <Typography color={'black'} variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={() => navigate('/')}>
+            Accueil
           </Typography>
           {user ? (
             <>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                {user.nom} {user.prenom}
+
+              <Typography color={'darkcyan'} variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                {user.observateur}
               </Typography>
             </>
           ) : (

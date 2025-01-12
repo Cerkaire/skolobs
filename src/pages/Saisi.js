@@ -6,18 +6,20 @@ import FicheForm from './FicheForm';
 import ObservationForm from './ObservationForm';
 import Synthese from './Synthese';
 import AddStadeForm from './AddStadeForm';
+import EditStadeForm from './EditStadeForm';
 import MapView from './MapView';
 import { MainContext } from '../context/MainContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function Saisie() {
-    const { selectedSpecies, setSelectedSpecies, phase, setPhase } = useContext(MainContext);
+    const { selectedSpecies, setSelectedSpecies, phase, setPhase, selectedStade, setSelectedStade } = useContext(MainContext);
     const [clickedPosition, setClickedPosition] = useState(null);
     const [organismes, setOrganismes] = useState([]);
     const [etudes, setEtudes] = useState([]);
     const [speciesOptions, setSpeciesOptions] = useState([]);
     const [status, setStatus] = useState('');
     const [onUpdateSelectedSpecies, setOnUpdateSelectedSpecies] = useState(null);
-
+    const navigate = useNavigate();
 
     // Fetch organismes, etudes and species from database
     useEffect(() => {
@@ -30,7 +32,7 @@ export default function Saisie() {
             setOrganismes(organismeData);
             setEtudes(etudeData);
             setSpeciesOptions(speciesData.map(species => ({
-                cdnom: species.cdnom, // Assuming cdnom is available in species
+                cdnom: species.cdnom,
                 nom: species.nom,
                 nomvern: species.nomvern,
                 observatoire: species.observatoire,
@@ -60,21 +62,23 @@ export default function Saisie() {
     };
 
     return (
-        <Container>
+        <Container sx={{ padding: 0 }}>
             {phase === 'map' && (
-                <MapView />
+                <React.StrictMode>
+                    <MapView />
+                </React.StrictMode>
             )}
             {phase === 'fiche' && (
                 <FicheForm
                     organismes={organismes}
                     etudes={etudes}
-                    onCancel={() => setPhase('map')}
+                    onCancel={() => setPhase('fiche')}
                 />
             )}
             {phase === 'observation' && (
                 <ObservationForm
                     speciesOptions={speciesOptions}
-                    onCancel={() => setPhase('map')}
+                    onCancel={() => setPhase('fiche')}
                 />
             )}
             {phase === 'synthese' && (
@@ -91,6 +95,15 @@ export default function Saisie() {
                     speciesOptions={speciesOptions}
                     selectedSpecies={selectedSpecies}
                     onCancel={() => setPhase('synthese')}
+                />
+            )}
+            {phase === 'editstade' && (
+                <EditStadeForm
+                    speciesOptions={speciesOptions}
+                    selectedSpecies={selectedSpecies}
+                    selectedStade={selectedStade}
+                    onCancel={() => setPhase('synthese')}
+
                 />
             )}
             {status && (
