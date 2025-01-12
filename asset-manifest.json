@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/skolobs/static/css/main.2e662a65.css",
+    "main.js": "/skolobs/static/js/main.8c613e7b.js",
+    "service-worker.js": "/skolobs/service-worker.js",
+    "index.html": "/skolobs/index.html",
+    "main.2e662a65.css.map": "/skolobs/static/css/main.2e662a65.css.map",
+    "main.8c613e7b.js.map": "/skolobs/static/js/main.8c613e7b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2e662a65.css",
+    "static/js/main.8c613e7b.js"
+  ]
+}
